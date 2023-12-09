@@ -17,10 +17,8 @@ import java.io.File;
 import java.io.IOException;
 
 public class MyPanel extends JPanel {
-    //存储圆的信息
     private Circle[] circles = CirclesHandler.circles;
 
-    //背景图片存储，在resources包下
     private static Image img;
     static {
         String path="src/resources/background.png";
@@ -36,7 +34,7 @@ public class MyPanel extends JPanel {
     }
 
     public MyPanel() {
-        //方法内的参数是匿名内部类
+
         addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -97,11 +95,9 @@ public class MyPanel extends JPanel {
         super.paintComponent(g);
         /*g.setColor(Color.black);
         g.fillRect(0,0,getWidth(),getHeight());*/
-        //绘制背景
         g.drawImage(img,0,0,getWidth(),getHeight(),this);
 
 
-        //绘制圆
 
         for (Circle circle : circles) {
 

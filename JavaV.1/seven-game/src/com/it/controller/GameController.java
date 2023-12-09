@@ -1,6 +1,7 @@
 package com.it.controller;
 
 import com.it.constant.Constant;
+
 import com.it.hander.CirclesHandler;
 import com.it.panel.MyPanel;
 import com.it.pojo.Info;
@@ -10,13 +11,17 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Time;
+import java.util.Locale.FilteringMode;
 
-
+import Jama.Matrix;
 /**
  */
 public class GameController {
     private JFrame jFrame;
     private MyPanel myPanel;
+    public static Matrix crossMatrix;
+    public static Matrix targetMatrix;
+    public static Matrix CoefficientMatrix;
 
     void init() {
         jFrame = new JFrame("");
@@ -31,48 +36,189 @@ public class GameController {
 
     public static void main(String[] args) {
         GameController gameController = new GameController();
-
+        
+        GameController.crossMatrix = new Matrix(6, 6);
+        GameController.targetMatrix = new Matrix(6 * 6, 1);
+        GameController.CoefficientMatrix = new Matrix(6 * 6,6 * 6);
+        
         gameController.init();
         
         gameController.creatRandomMatrix();
 
-        gameController.computerOperate();
+        //gameController.computerOperate();
+        
+        gameController.MatrixOptiomalSolution();
+    }
+    
+    public void MatrixOptiomalSolution()
+    {
+    	Matrix OptionmalSolutionMatrix = new Matrix(6 * 6, 1);
+    	OptionmalSolutionMatrix = gaussianElimination(CoefficientMatrix, targetMatrix);
+    	for(int i = 0;i < 6 * 6;i++)
+    	{
+    		System.out.print(OptionmalSolutionMatrix.get(i, 1) + " ");
+    		if(i % 6 == 5)
+    			System.out.print("\n");
+    	}
+    }
+    
+    public static Matrix gaussianElimination(Matrix A, Matrix b) 
+    {
+    	Matrix augmenMatrix = concatMatrix(A, b);
+    	
+    	int cols, rows;
+    	cols = augmenMatrix.getColumnDimension();
+    	rows = augmenMatrix.getRowDimension();
+    	
+    	for(int i = 0;i < augmenMatrix.getRowDimension();i++)
+    	{
+    		int pivotRow = i;
+    		for(int j = 0;j < augmenMatrix.getRowDimension();j++)
+    			if(Math.abs(augmenMatrix.get(j, i)) > Math.abs(augmenMatrix.get(pivotRow, i)))
+    				pivotRow = j;
+    		
+    		augmenMatrix = swapMatrixRows(augmenMatrix, i, pivotRow);
+    		
+    		double even = 2;
+    		if(StrictMath.IEEEremainder(augmenMatrix.get(i, i), even) != 0)
+    			for(int k = 0;k < cols;k++)
+    				augmenMatrix.set(i, k, augmenMatrix.get(i, k) / StrictMath.IEEEremainder(augmenMatrix.get(i, k), even));
+    		
+    		for(int j = 0;j < rows;j++)
+    			if(j != i)
+    				for(int k = 0;k < cols;k++)
+    					augmenMatrix.set(j, k, augmenMatrix.get(j, k) - augmenMatrix.get(j, i) * augmenMatrix.get(i, k));
+    	
+    		for(int j = 0;j < rows;j++)
+    			for(int k = 0;k < cols;k++)
+    				augmenMatrix.set(j, k, StrictMath.IEEEremainder(augmenMatrix.get(j, k), even));
+
+    	}
+    	
+    	Matrix solutionMatrix = new Matrix(rows, 1);
+    	solutionMatrix.setMatrix(0, rows - 1, cols - 1, cols - 1, augmenMatrix);
+    	
+    	return solutionMatrix;
+    }
+    
+    public static Matrix swapMatrixRows(Matrix matrix, int row1, int row2)
+    {
+    	int cols = matrix.getColumnDimension();
+    	
+    	for(int i = 0;i < cols;i++)
+    	{
+    		double temp = matrix.get(row1, i);
+    		matrix.set(row1, i, matrix.get(row2, i));
+    		matrix.set(row2, i, temp);
+    	}
+    	
+    	return matrix;
+    }
+    
+    public static Matrix concatMatrix(Matrix A, Matrix b)
+    {
+    	if(A.getRowDimension() != A.getColumnDimension() || A.getRowDimension() != b.getRowDimension())
+    	{
+    		System.err.println("error:Matrices A and b do not match");
+    		return null;
+    	}
+    	
+    	int A_cols, rows, b_cols;
+    	A_cols = A.getRowDimension();
+    	rows = A.getRowDimension();
+    	b_cols = b.getColumnDimension();
+    	rows = b.getColumnDimension();
+    	
+    	Matrix augmentedMatrix = new Matrix(rows, A_cols + b_cols);
+    	
+    	augmentedMatrix.setMatrix(0, rows - 1, 0, A_cols - 1, A);
+    	augmentedMatrix.setMatrix(0, rows - 1, A_cols, A_cols + b_cols - 1, b);
+    	
+    	return augmentedMatrix;
     }
     
     public void creatRandomMatrix() {
-    	int[] randPoint = {-1, -1, -1, -1, -1};
-    	Info[] init = new Info[5];
-    	for(int i = 0;i < 5;i++)
+    	int[] randPoint = {-1, -1, -1, -1, -1, -1};
+    	Info[] init = new Info[6];
+    	for(int i = 0;i < 6;i++)
     	{
     		init[i] = new Info(-1, -1);
-    		randPoint[i] = ((int)(Math.random() * 100)) % 25;
+    		randPoint[i] = ((int)(Math.random() * 100)) % 36;
     		int x = CirclesHandler.circles[randPoint[i]].getX();
     		int y = CirclesHandler.circles[randPoint[i]].getY();
     		init[i].setX(x);
     		init[i].setY(y);
     		
     		CirclesHandler.handInfo(init[i]);
+    		
+    		crossMatrix.set(randPoint[i] / 6, randPoint[i] % 6, 1);
+    		targetMatrix.set(randPoint[i], 1, 1);
     	}
+    	
     	myPanel.rePrintCircle();
+    	
+    	int[][] templateMatrix = 
+    		{
+    				{1,1,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0},
+    				{1,1,1,1,1,1,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0},
+    				{1,1,1,1,1,1,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0},
+    				{1,1,1,1,1,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0},
+    				{1,1,1,1,1,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0},
+    				{1,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1},
+    				{1,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0},
+    				{0,1,0,0,0,0,1,1,1,1,1,1,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0},
+    				{0,0,1,0,0,0,1,1,1,1,1,1,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0},
+    				{0,0,0,1,0,0,1,1,1,1,1,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0},
+    				{0,0,0,0,1,0,1,1,1,1,1,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0},
+    				{0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1},
+    				{1,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0},
+    				{0,1,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0},
+    				{0,0,1,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0},
+    				{0,0,0,1,0,0,0,0,0,1,0,0,1,1,1,1,1,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0},
+    				{0,0,0,0,1,0,0,0,0,0,1,0,1,1,1,1,1,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0},
+    				{0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1},
+    				{1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0},
+    				{0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,0,1,0,0,0,0,0,1,0,0,0,0},
+    				{0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,0,0,1,0,0,0,0,0,1,0,0,0},
+    				{0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1,1,1,1,1,1,0,0,0,1,0,0,0,0,0,1,0,0},
+    				{0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,1,1,1,1,1,1,0,0,0,0,1,0,0,0,0,0,1,0},
+    				{0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,1},
+    				{1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0},
+    				{0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1,0,1,0,0,0,0},
+    				{0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,0,0,1,0,0,0},
+    				{0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1,1,1,1,1,1,0,0,0,1,0,0},
+    				{0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,1,1,1,1,1,1,0,0,0,0,1,0},
+    				{0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,1},
+    				{1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1},
+    				{0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1,1,1,1,1,1},
+    				{0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1},
+    				{0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1,1,1,1,1,1},
+    				{0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,1,1,1,1,1,1},
+    				{0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1}
+    		};
+    	
+    	for(int i = 0;i < CoefficientMatrix.getRowDimension();i++)
+    		for(int j = 0;j < CoefficientMatrix.getColumnDimension();j++)
+    			CoefficientMatrix.set(i, j, templateMatrix[i][j]);
     }
 
-    public void computerOperate() {
-
-        new Timer(2000, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int rand = ((int) (Math.random() * 100)) % 25;
-                int x = CirclesHandler.circles[rand].getX();
-                int y = CirclesHandler.circles[rand].getY();
-
-                Info info = new Info(-1, -1);
-                info.setY(y);
-                info.setX(x);
-
-                CirclesHandler.handInfo(info);
-                myPanel.rePrintCircle();
-            }
-        }).start();
-
-    }
+//    public void computerOperate() {
+//
+//        new Timer(2000, new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                int rand = ((int) (Math.random() * 100)) % 25;
+//                int x = CirclesHandler.circles[rand].getX();
+//                int y = CirclesHandler.circles[rand].getY();
+//
+//                Info info = new Info(-1, -1);
+//                info.setY(y);
+//                info.setX(x);
+//
+//                CirclesHandler.handInfo(info);
+//                myPanel.rePrintCircle();
+//            }
+//        }).start();
+//
+//    }
 }

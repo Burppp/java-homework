@@ -11,13 +11,13 @@ public class CirclesHandler {
     public static Circle[] circles;
 
     static {
-        circles = new Circle[25];
+        circles = new Circle[36];
         int i = 0;
         for (Circle circle : circles) {
             circle = new Circle();
             circles[i] = circle;
-            circle.setX((i % 5) * Constant.CIRCLE_SIZE + (i % 5) * Constant.CIRCLE_INTERVAL);
-            circle.setY(i / 5 * Constant.CIRCLE_SIZE + i / 5 * Constant.CIRCLE_INTERVAL);
+            circle.setX((i % 6) * Constant.CIRCLE_SIZE + (i % 6) * Constant.CIRCLE_INTERVAL);
+            circle.setY(i / 6 * Constant.CIRCLE_SIZE + i / 6 * Constant.CIRCLE_INTERVAL);
             circle.setColor(Color.white);
             circle.setUpdate(false);
             circle.setAlpha(255);
@@ -30,7 +30,7 @@ public class CirclesHandler {
         int y = info.getY();
         int ind = -1;
 
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < 36; i++) {
             if (x >= circles[i].getX() && x <= circles[i].getX() + Constant.CIRCLE_SIZE
                     && y >= circles[i].getY() && y <= circles[i].getY() + Constant.CIRCLE_SIZE) {
                 ind = i;
@@ -41,10 +41,10 @@ public class CirclesHandler {
         if (ind == -1) return;
 
         //鼠标点击检测合法，变换所在行列
-        int row = ind / 5;
-        int col = ind % 5;
-        for (int i = 0; i < 25; i++) {
-            if (i / 5 == row || i % 5 == col) {
+        int row = ind / 6;
+        int col = ind % 6;
+        for (int i = 0; i < 36; i++) {
+            if (i / 6 == row || i % 6 == col) {
                 if (circles[i].getColor() == Color.white)
                     circles[i].setColor(Color.green);
                 else
@@ -56,7 +56,7 @@ public class CirclesHandler {
     }
 
     public static void shutUpdate() {
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < 36; i++) {
             if (circles[i].isUpdate())
                 circles[i].setAlpha(0);
 
@@ -66,7 +66,7 @@ public class CirclesHandler {
 
     public static boolean ok() {
         boolean ok = true;
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < 36; i++) {
             Circle circle = circles[i];
 
             int alpha = circle.getAlpha();

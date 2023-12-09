@@ -65,6 +65,8 @@ bool checkWin()
 }
 // Gaussian elimination for solving a linear system Ax = b
 Eigen::VectorXd gaussianElimination(const Eigen::MatrixXd& A, const Eigen::VectorXd& b) {
+	cout << A << endl << endl;
+
 	// Check if the system is square
 	if (A.rows() != A.cols() || A.rows() != b.size()) {
 		std::cerr << "Error: The system is not square or compatible." << std::endl;
@@ -91,7 +93,7 @@ Eigen::VectorXd gaussianElimination(const Eigen::MatrixXd& A, const Eigen::Vecto
 		// Make the pivot element 1
 		if (fmod(augmentedMatrix(i, i), 2.0f) != 0)
 			augmentedMatrix.row(i) /= fmod(augmentedMatrix(i, i), 2.0f);
-		
+	
 		// Eliminate other elements in the current column
 		for (int j = 0; j < augmentedMatrix.rows(); ++j) {
 			if (j != i) {
@@ -99,12 +101,12 @@ Eigen::VectorXd gaussianElimination(const Eigen::MatrixXd& A, const Eigen::Vecto
 			}
 		}
 		
-		for(int i = 0;i < augmentedMatrix.rows();i++)
+		for(int k = 0;k < augmentedMatrix.rows();k++)
 			for (int j = 0;j < augmentedMatrix.cols();j++)
 			{
-				augmentedMatrix(i, j) = fmod(augmentedMatrix(i, j), -2);
-				augmentedMatrix(i, j) += 2;
-				augmentedMatrix(i, j) = fmod(augmentedMatrix(i, j), 2);
+				//augmentedMatrix(k, j) = fmod(augmentedMatrix(k, j), -2);
+				//augmentedMatrix(k, j) += 2;
+				augmentedMatrix(k, j) = fmod(augmentedMatrix(k, j), 2);
 			}
 		
 	}
