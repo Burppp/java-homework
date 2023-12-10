@@ -1,2 +1,0 @@
-# java-homework
-flip coins
