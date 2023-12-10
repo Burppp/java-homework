@@ -1,3 +1,5 @@
+package com.it.panel;
+
 import com.it.constant.Constant;
 
 import com.it.hander.CirclesHandler;
@@ -5,7 +7,9 @@ import com.it.panel.MyPanel;
 import com.it.pojo.Info;
 import org.junit.jupiter.api.Test;
 
+import javax.sound.midi.SysexMessage;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Time;
@@ -21,15 +25,52 @@ public class GameController {
     public static Matrix targetMatrix;
     public static Matrix CoefficientMatrix;
 
-    void init() {
+    void init(GameController gameController) {
         jFrame = new JFrame("");
         jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        myPanel = new MyPanel();
+        myPanel = new MyPanel(gameController);
         jFrame.add(myPanel);
 
         jFrame.setSize(Constant.FRAME_WIDTH,Constant.FRAME_HEIGHT);
         jFrame.setVisible(true);
+    }
+
+    public Matrix getCrossMatrix()
+    {
+        return crossMatrix;
+    }
+
+    public void checkWin()
+    {
+        double status = crossMatrix.get(0, 0);
+        int i, j;
+        for(i = 0;i < 6;i++)
+            for(j = 0;j < 6;j++)
+                if(crossMatrix.get(i, j) != status)
+                    return;
+        if(i == 6)
+        {
+            System.out.printf("Win!!");
+            System.exit(0);
+        }
+        return;
+    }
+
+    public void updateMatrix(int index)
+    {
+        int row, col;
+        row = index / 6;
+        col = index % 6;
+        if(crossMatrix.get(row, col) == 0.f)
+            crossMatrix.set(row, col, 1.0f);
+        else
+            crossMatrix.set(row, col, 0.0f);
+
+        if(targetMatrix.get(index, 0) == 0.0f)
+            targetMatrix.set(index, 0, 1.0f);
+        else
+            targetMatrix.set(index, 0, 0.0f);
     }
 
     public static void main(String[] args) {
@@ -39,9 +80,9 @@ public class GameController {
         GameController.targetMatrix = new Matrix(6 * 6, 1);
         GameController.CoefficientMatrix = new Matrix(6 * 6,6 * 6);
 
-        gameController.init();
+        gameController.init(gameController);
 
-        gameController.creatRandomMatrix();
+        gameController.creatRandomMatrix(gameController);
 
         //gameController.computerOperate();
 
@@ -58,6 +99,7 @@ public class GameController {
             if(i % 6 == 5)
                 System.out.print("\n");
         }
+        System.out.println();
     }
 
     public static Matrix gaussianElimination(Matrix A, Matrix b)
@@ -134,7 +176,7 @@ public class GameController {
         return augmentedMatrix;
     }
 
-    public void creatRandomMatrix() {
+    public void creatRandomMatrix(GameController gameController) {
         int[] randPoint = {-1, -1, -1, -1, -1, -1};
         Info[] init = new Info[6];
         for(int i = 0;i < 6;i++)
@@ -146,7 +188,7 @@ public class GameController {
             init[i].setX(x);
             init[i].setY(y);
 
-            CirclesHandler.handInfo(init[i]);
+            CirclesHandler.handInfo(init[i], gameController);
 
             crossMatrix.set(randPoint[i] / 6, randPoint[i] % 6, 1);
             targetMatrix.set(randPoint[i], 0, 1);

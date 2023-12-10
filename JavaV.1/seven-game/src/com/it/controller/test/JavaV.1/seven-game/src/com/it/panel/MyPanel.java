@@ -1,6 +1,5 @@
 package com.it.panel;
 
-import Jama.Matrix;
 import com.it.constant.Constant;
 import com.it.hander.CirclesHandler;
 import com.it.pojo.Circle;
@@ -46,34 +45,12 @@ public class MyPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 Info info = new Info(-1, -1);
-                int x = e.getX();
-                int y = e.getY();
-                info.setX(x);
-                info.setY(y);
-                int ind = -1;
+                info.setX(e.getX());
+                info.setY(e.getY());
 
-                for (int i = 0; i < 36; i++) {
-                    if (x >= circles[i].getX() && x <= circles[i].getX() + Constant.CIRCLE_SIZE
-                            && y >= circles[i].getY() && y <= circles[i].getY() + Constant.CIRCLE_SIZE) {
-                        ind = i;
-                        break;
-                    }
-                }
-
-                if (ind == -1) return;
-
-                CirclesHandler.handInfo(info, externalGameController);
+                CirclesHandler.handInfo(info);
 
                 rePrintCircle();
-
-                externalGameController.updateMatrix(ind);
-
-//                Matrix crossMatrix = new Matrix(6, 6);
-//                crossMatrix = externalGameController.getCrossMatrix();
-
-                gameController.MatrixOptiomalSolution();
-
-                gameController.checkWin();
             }
 
             @Override

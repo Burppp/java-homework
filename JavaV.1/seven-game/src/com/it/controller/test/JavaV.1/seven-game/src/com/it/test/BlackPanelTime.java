@@ -1,15 +1,21 @@
 package com.it.test;
 
+import com.it.constant.Constant;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class BlackPanel extends JPanel {
+public class BlackPanelTime extends JPanel {
 
     private Color circleColor = Color.WHITE; // 初始圆的颜色为白色
+    private Timer timer;
+    private float alpha = 1.0f; // 初始透明度为1
 
-    public BlackPanel() {
+    public BlackPanelTime() {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -22,13 +28,20 @@ public class BlackPanel extends JPanel {
 
                 // 判断点击位置是否在圆形区域内
                 if (Math.pow(mouseX - centerX, 2) + Math.pow(mouseY - centerY, 2) <= Math.pow(radius, 2)) {
-                    circleColor = Color.GREEN; // 点击圆形区域后将圆的颜色设为绿色
-                    repaint(); // 重新绘制面板
-
-
+                    timer.start(); // 启动定时器，开始颜色渐变
                 }
+            }
+        });
 
-
+        timer = new Timer(10, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (alpha > 0.0f) {
+                    alpha -= 0.01f; // 每次减小透明度0.01
+                    repaint(); // 重新绘制面板
+                } else {
+                    timer.stop(); // 透明度为0后停止定时器
+                }
             }
         });
     }
@@ -43,19 +56,21 @@ public class BlackPanel extends JPanel {
         int centerY = getHeight() / 2;
         int radius = Math.min(getWidth(), getHeight()) / 4;
 
-        g.setColor(circleColor); // 使用当前圆的颜色
+        Color transparentColor = new Color(circleColor.getRed(), circleColor.getGreen(), circleColor.getBlue(), (int) (alpha * 255));
+        g.setColor(transparentColor); // 使用当前圆的颜色和透明度
         g.fillOval(centerX - radius, centerY - radius, radius * 2, radius * 2);
     }
 
     public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Black Panel with Circle");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-            BlackPanel panel = new BlackPanel();
+            BlackPanelTime panel = new BlackPanelTime();
             frame.add(panel);
 
-            frame.setSize(500, 500);
+            frame.setSize(Constant.FRAME_WIDTH, Constant.FRAME_HEIGHT);
             frame.setVisible(true);
-
+        });
     }
 }

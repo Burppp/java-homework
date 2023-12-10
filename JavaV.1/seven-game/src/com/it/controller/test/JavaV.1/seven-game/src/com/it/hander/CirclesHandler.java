@@ -1,10 +1,8 @@
 package com.it.hander;
 
-import Jama.Matrix;
 import com.it.constant.Constant;
 import com.it.pojo.Circle;
 import com.it.pojo.Info;
-import com.it.panel.GameController;
 
 import java.awt.*;
 
@@ -27,7 +25,7 @@ public class CirclesHandler {
         }
     }
     //用于处理鼠标点击造成圆状态改变的事件
-    public static void handInfo(Info info, com.it.panel.GameController GameControllerChange) {
+    public static void handInfo(Info info) {
         int x = info.getX();
         int y = info.getY();
         int ind = -1;
